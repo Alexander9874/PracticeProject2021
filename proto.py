@@ -40,67 +40,6 @@ class Word:
             if (i != self):
                 self.same.append(i)
 
-#    def PrintSame(self, length):
-#        print(self.word + str(length), end = " ")
-#        if (len(self.next) == 0):
-#            print('\n')
-#        
-#        for i in self.next:
-#
-#            i.PrintSame(length + len(self.word))
-#        for i in self.same:
-#            print(' ' * int(length) + i.word + str(length), end = ' ')
-#            if (len(i.next) == 0):
-#                print('\n')
-#            
-#            for j in self.next:
-#                j.PrintSame(length + len(j.word))
-
-#    def PrintSame(self, length):
-#        print(' ' * length + self.word, end = ' ')
-#        if (len(self.next) == 0):
-#            print('\n')
-#        else:
-#            PrintNext(length + len(self.word))
-#        
-#        for i in self.same:
-#            print(' ')
-
-    
-    
-#    def PrintNext(self, length):
-#        print(self.word, end = ' ')
-#        if (len(self.next) == 0):
-#            print('\n')
-#        else:
-#            PrintNext(length + 1 + len(self.word))
-#        if (len(self.same) != 0):
-#            PrintSame(length + 1 + len(self.word))
-#
-#    def PrintSame(self, length):
-#        for i in self.same:
-#            print(' ' * length + i.word, end = ' ')
-#            if (len(i.next == 0)):
- #               print('\n')
-#            else:
-#                PrintNext(length + 1 + len(i.word))
-#
-#    def Print(self, length):
-#        print(self.word, end = ' ')
-#        length = length + 1 + len(self.word)
-#
-#        if (len(self.next) == 0):
-#            print('\n')
-#        else:
-#
-#            self.next.Print(length + 1 + len(self.word))
-#        if (len(self.same) != 0):
-#            for i in self.same:
-#                print(' ' * length + i.word, end = ' ')
-#                if (len(i.next) == 0):
-#                    print('\n')
-#                else:
-#                    i.Print(length + len(i.word) + 1)
 
 
             # END CLASS
@@ -136,6 +75,7 @@ def main():
     for i in range(len(array)):
         matrix.append([None]*len(array))
 
+
     n = 0
     buf = []
     for i in array:     # сущ,мест,числ в И.П.
@@ -145,18 +85,37 @@ def main():
             n = n + 1
     AddSame(buf)
 
-    buf = []        
+
     for i in array:     # гл не в инф.
         if (i.POS == "VERB"):
             matrix[n][n] = i
             m = n - 1
             for j in array:
                 if ((j.POS == "NOUN" or j.POS == "NPRO" or j.POS == "NUMR") and j.case == "nomn"):
-                    if ((i.person == j.person or i.person == "None") and i.number == j.number and (i.gender == j.gender or i.gender == "None")):
+                    if ((i.person == j.person or i.person == "None") and i.number == j.number and (i.gender == j.gender or i.gender == "None" or j.gender == "None")):
                         matrix[m][n] = j
                         j.AddNext(i)
                         m = m - 1
+                    if (i.number == "plur" and j.number != "plur" and len(j.same) != 0):
+                        if(i.person == "None"):
+                            matrix[m][n] = j
+                            j.AddNext(i)
+                            m = m -1
+                        else:
+                            if (j.person == i.person):
+                                if (j.next.count(i) != 0):
+                                    continue
+                                matrix[m][n] = j
+                                j.next.append(i)
+                                m = m - 1
+                                for k in j.same:
+                                    matrix[m][n] = k
+                                    k.next.append(i)
+                                    m = m - 1
+                if(j.POS == "VERB" and j.aspect == i.aspect and j.mood == i.mood and j.number == i.number and i.person == j.person and i.tense == j.tense and i.gender == j.gender and i != j):
+                    i.same.append(j)
             n = n + 1
+
 
     for i in array:     # гл в инф
         if (i.POS == "INFN"):
@@ -167,7 +126,10 @@ def main():
                     matrix[m][n] = j
                     j.AddNext(i)
                     m = m -1
+                elif (j.POS == "INFN" and j != i):
+                    i.same.append(j)
             n = n + 1
+
 
     for i in array:     # сущ,мест,числ не в И.П.
         if ((i.POS == "NOUN" or i.POS == "NPRO" or i.POS == "NUMR") and i.case != "nomn"):
@@ -178,7 +140,10 @@ def main():
                     matrix[m][n] = j
                     j.AddNext(i)
                     m = m - 1
+                elif ((j.POS == "NOUN" or j.POS == "NPRO" or j.POS == "NUMR") and i.case == j.case and i != j):
+                    i.same.append(j)
             n = n + 1
+
 
     for i in array:     # прил,прич
         if (i.POS == "ADJF" or i.POS == "PRTF"):    #aspect???
@@ -190,7 +155,11 @@ def main():
                         matrix[m][n] = j
                         j.AddNext(i)
                         m = m - 1
+                elif ((j.POS == "ADJF" or j.POS == "PRTF") and i.case == j.case and i.gender == j.gender and i.number == j.number and i != j):
+                    i.same.append(j)
+
             n = n + 1
+
 
     for i in array:     # нареч,дееприч
         if (i.POS == "GRND" or i.POS == "ADVB"):
@@ -201,12 +170,38 @@ def main():
                     matrix[m][n] = j
                     j.AddNext(i)
                     m = m - 1
+                elif ((j.POS == "GRND" or j.POS == "ADVB") and i != j):
+                    i.same.append(j)
             n = n + 1
 
+
+    for i in range(len(array)):     #союзы
+        if (array[i].POS == "CONJ"):
+            matrix[n][n] = array[i]
+            m = n -1
+            for j in range(i + 1, len(array), 1):
+                if (len(array[j].same) != 0):                           # MAY WORK WRONG
+                    for k in range(i - 1, -1, -1):
+                        if (array[j].same.count(array[k]) != 0):
+                            matrix[m][n] = array[j]
+                            m = m - 1
+                            matrix[m][n] = array[k]
+
+
+    
     PrintMatrix(matrix, len(array))
 
     print('\n')
-#    matrix[0][0].Print(0)
+
+    for i in array:
+        print('\n' + i.word)
+        print("Same: ", end = ' ')
+        for j in i.same:
+            print(j.word, end = ' ')
+        print('\n' + "Next: ", end = ' ')
+        for j in i.next:
+            print(j.word, end = ' ')
+        print('\n')
 
 if (__name__ == "__main__"):
     main()

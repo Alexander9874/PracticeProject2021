@@ -8,35 +8,17 @@ m = pymorphy2.MorphAnalyzer()
 
 def Analise():
     text = str(input("> "))
-
-    print("\ntext = str(input(\"> \")):" + text + "\n")
-
     s = " "
     for i in text:
         if i != "." and i != ")" and i != "(":
             s = s + i
     words = nltk.tokenize.word_tokenize(s)
-
-    print("words = token:")
-    print(words)
-
     y = [w for w in words if len(w) > 0]
-    print("\ny =[]:")
-    print(y) # ['word', 'word', 'word']
-
     fdist = nltk.FreqDist(y)
-    print("\nfdist = FreqDist:")
-    print(fdist)
 
     vocab = list(fdist.keys())
-    print("\nvocab = list(fdist.key()):")
-    print(vocab)
-
-    print("\nv in vocab:")
-
     for v in vocab:
         try:
-
             parse = m.parse(v)[0]
             print("\nparse = m.parse:")
             print(parse)
@@ -55,13 +37,8 @@ def Analise():
             print("11. parse.tag.trasistivity: " + str(parse.tag.transitivity))
             print("12. parse.tag.voice: " + str(parse.tag.voice))
 #            print(parse.inflect({'plur', 'nomn'}).word)
-
             print(parse.tag)
-            
-            print('\n' + "check")
-            print(' ' * 10 + "MEOW!", end = ' ')
         except:
-
             print("\nexcept!")
             pass
 Analise()
