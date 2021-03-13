@@ -32,9 +32,6 @@ class Word:
         self.next = []
         self.same = []
 
-    def AddNext(self, link):
-        self.next.append(link)
-
     def AddSame(self, buf):
         for i in buf:
             if (i != self):
@@ -94,12 +91,12 @@ def main():
                 if ((j.POS == "NOUN" or j.POS == "NPRO" or j.POS == "NUMR") and j.case == "nomn"):
                     if ((i.person == j.person or i.person == "None") and i.number == j.number and (i.gender == j.gender or i.gender == "None" or j.gender == "None")):
                         matrix[m][n] = j
-                        j.AddNext(i)
+                        j.next.append(i)
                         m = m - 1
                     if (i.number == "plur" and j.number != "plur" and len(j.same) != 0):
                         if(i.person == "None"):
                             matrix[m][n] = j
-                            j.AddNext(i)
+                            j.next.append(i)
                             m = m -1
                         else:
                             if (j.person == i.person):
@@ -124,7 +121,7 @@ def main():
             for j in array:
                 if (j.POS == "VERB"):
                     matrix[m][n] = j
-                    j.AddNext(i)
+                    j.next.append(i)
                     m = m -1
                 elif (j.POS == "INFN" and j != i):
                     i.same.append(j)
@@ -138,7 +135,7 @@ def main():
             for j in array:
                 if (j.POS == "VERB" or j.POS == "INFN"):
                     matrix[m][n] = j
-                    j.AddNext(i)
+                    j.next.append(i)
                     m = m - 1
                 elif ((j.POS == "NOUN" or j.POS == "NPRO" or j.POS == "NUMR") and i.case == j.case and i != j):
                     i.same.append(j)
@@ -153,7 +150,11 @@ def main():
                 if (j.POS == "NOUN" or j.POS == "NPRO" or j.POS == "NUMR"):
                     if (j.case == i.case and j.gender == i.gender and j.number == i.number):
                         matrix[m][n] = j
-                        j.AddNext(i)
+                        j.next.append(i)
+                        m = m - 1
+                    if (i.number == "plur" and j.number == "sing" and j.case == i.case and len(j.same) != 0):
+                        matrix[m][n] = j
+                        j.next.append(i)
                         m = m - 1
                 elif ((j.POS == "ADJF" or j.POS == "PRTF") and i.case == j.case and i.gender == j.gender and i.number == j.number and i != j):
                     i.same.append(j)
@@ -168,7 +169,7 @@ def main():
             for j in array:
                 if (j.POS == "VERB" or j.POS == "INFN"):
                     matrix[m][n] = j
-                    j.AddNext(i)
+                    j.next.append(i)
                     m = m - 1
                 elif ((j.POS == "GRND" or j.POS == "ADVB") and i != j):
                     i.same.append(j)
@@ -178,7 +179,7 @@ def main():
     for i in range(len(array)):     #союзы
         if (array[i].POS == "CONJ"):
             matrix[n][n] = array[i]
-            m = n -1
+            m = n - 1
             for j in range(i + 1, len(array), 1):
                 if (len(array[j].same) != 0):                           # MAY WORK WRONG
                     for k in range(i - 1, -1, -1):
@@ -186,6 +187,8 @@ def main():
                             matrix[m][n] = array[j]
                             m = m - 1
                             matrix[m][n] = array[k]
+                            m = m - 1
+
 
 
     
@@ -202,6 +205,31 @@ def main():
         for j in i.next:
             print(j.word, end = ' ')
         print('\n')
+
+
+    output = ''
+    for i in range(len(array)):
+        if (array[i].POS == "CONJ"):
+            if (array[i].word == "а" or array[i].word == "но" or array[i].word == 'однако' or array[i].word == 'зато'):
+                output = output + ','
+            output = output + array[i].word
+            output = output + ' '
+            continue         
+        output = output + array[i].word
+        check = 1
+        if (len(array[i].same) != 0):
+            for j in range(i + 1, len(array), 1):
+                if (array[i].same.count(array[j]) != 0 and check == 1):
+                    check = 0
+                    output = output + ","
+                    for k in range(i + 1, j, 1):
+                        if(array[k].POS == "CONJ"):
+                            output = output[0:-1]
+                            output = output
+                            break
+        output = output + ' '
+    print(output)
+
 
 if (__name__ == "__main__"):
     main()
