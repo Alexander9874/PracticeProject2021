@@ -1,7 +1,7 @@
 import sqlite3 
 from sqlite3 import Error
 
-PATH = "./words00000.sqlite"
+PATH = "../words00000.sqlite"
 
 def create_connection(path):
     connection = None
