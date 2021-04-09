@@ -111,6 +111,9 @@ def Get_Words():
     return array
 
 
+	# FUNCTIONS TO CONNECT WORDS
+
+
 def Subjects(array, root):
     for i in array:
         if((i.POS == "сущ" or i.POS == "сущ,мест") and i.case == "им"):
@@ -140,25 +143,66 @@ def Predicates(array, root):
                     i.Add_Same(j)
 
 def Infinitives(array, root):
-    pass
+	for i in array:
+		if(i.inf == 1):
+			for j in array:
+				if (j.inf == 1):
+					j.Add_Next(i)
+				elif (j.inf == 0):
+					i.Add_Sane(j);
 
 def Objects(array, root):
-    pass
+	for i in array:
+		if(i.case != "им" and (i.POS == "сущ" or i.POS == "числ" or i.POS == "сущ,мест")):
+			for j in array:
+				if (j.inf == 0 or j.inf == 1):
+					j.Add_Next(i)
+				elif (i.case == j.case  and (j.POS == "сущ" or j.POS == "числ" or j.POS == "сущ,мест")):
+					i.Add_Same(j)
 
-def Atributes(array, root):
-    pass
+def Atributes(array, root):		#Определение
+	for i in array:
+		if(i.POS == "прл" or i.POS == "прч"):
+			for j in array:
+				if ((j.POS == "прл" or j.POS == "прч") and i.case == j.case and (i.gender == j.gender or i.gender == "None" or j.gender == "None") and i.number == j.number and i != j):
+					i.Add_Same(j)
+			for j in array:
+				if (j.POS == "сущ" or j.POS == "числ" or j.POS == "сущ,мест"):
+					if (j.case == i.case and j.gender == i.gender and i.number == j.number):
+						j.Add_Next(i)
+					if (i.plural == 1 and j.number == 0 and i.case == j.case and len(j.same) != 0):
+						j.Add_Next(i)
 
-def Conditions(array, root):
-    pass
+def Conditions(array, root):	#Обстоятельства
+    for i in array:
+		if (i.POS == "нар" or i.POS == "дееп"):
+			for j in array:
+				if (j.inf == 1 or j.inf == 0):
+					j.Add_Next(i)
+				elif ((j.POS == "нар" or j.POS == "дееп") and i != j):
+					i.Add_Same(j)
 
-def Prepositions(array, root):
-    pass
+def Prepositions(array, root):	#Предлоги
+	for i in range(len(array)):
+		if (array[i].POS == "предл"):
+			for j in range(i + 1, len(array, 1)):
+				if (array[j].POS == "сущ" or array[j].POS == "числ" or array[j].POS == "сущ,мест" and array[j].case != "им"):
+					i.Add_Next(j)
+					break
 
-def Conjunctions(array, root):
-    pass
+def Conjunctions(array, root):	#Союзы
+	for i in range(len(array)):
+		if (array[i].POS == "союз"):
+			for j in range(i + 1, len(array), 1):
+				if (len(array[j]) != 0):
+					for k in range(i - 1, -1, -1):
+						if (array[j].same.count(array[k]) !=0):
+							k.Add_Next(i)
+							i.Add_Next(j)
 
 
 
+	# end of FUNCTIONS TO CONNECT WORDS
 
 
 
