@@ -51,6 +51,53 @@ class Word:
         self.short.append(info[20])
 
 
+class Item:
+
+    def __init__(self, item, index):
+        self.index = 0          # ??
+        self.next = []
+        self.same = []
+        self.prev = []          # ??
+        self.conection = []     # ??
+
+        if item:
+#           self.IID = item.IID[index]
+            self.word = item.word[index]
+#           self.code = item.code(index)
+#           self.code_parent = item.code_parent(index)
+            self.POS = item.POS[index]
+            self.type_sub = item.type_sub[index]
+            self.type_ssub = item.type_ssub[index]
+            self.plural = item.plural[index]
+            self.gender = item.gender[index]
+            self.case = item.case[index]
+            self.comp = item.comp[index]
+            self.soul = item.soul[index]
+            self.transit = item.transit[index]
+            self.perfect = item.perfect[index]
+            self.face = item.face[index]
+            self.kind = item.kind[index]
+            self.time = item.time[index]
+            self.inf = item.inf[index]
+            self.vozv = item.vozv[index]
+            self.nakl = item.nakl[index]
+            self.short = item.short[index]
+
+
+    def Add_Same(self, new):
+        if (self.same.count(new) == 0):
+            self.same.append(new)
+
+    def Add_Next(self, new):
+        if (self.next.count(new) == 0):
+            self.next.append(new)
+
+
+
+        # CLASS END
+
+
+
 def Get_Words():
     text = str(input("Enter your sentence.\n>> "))
     script = dictionary.Find(text)
@@ -62,8 +109,103 @@ def Get_Words():
             j = j + 1
         array[j].Fill_Word(script[i])
     return array
+
+
+def Subjects(array, root):
+    for i in array:
+        if((i.POS == "сущ" or i.POS == "сущ,мест") and i.case == "им"):
+            root.Add_Next(i)
+            for j in array:
+                if ((j.POS == "сущ" or j.POS == "сущ,мест") and j.case == "им"):
+                    i.Add_Same(j)
+
+def Predicates(array, root):
+    for i in array:
+        if (i.inf == 0):
+            for j in array:
+                if((i.POS == "сущ" or i.POS == "сущ,мест") and i.case == "им"):
+                    if ((i.face == j.face or i.face == "None" or (i.face == "3-е" and j.face == "None")) and i.plural == j.plural and (i.gender == j.gender or i.gender == "None" or j.gender == "None")):
+                        j.Add_Next(i)
+                    if(i.plural == 1 and j.plural == 0 and len(j.same) != 0):
+                        if(i.face == "None"):
+                            j.Add_Next
+                        else:
+                            if(j.face == i.face or (j.POS == "сущ")):
+                                if (j.next.count(i) != 0):
+                                    continue
+                                j.Add_Next(i)
+                                for k in j.same:
+                                    k.Add_Next(i)
+                if (j.POS == "гл" and j.plural == i.plural and j.gender == i.gender and j.time == i.time and j.face == i.face):
+                    i.Add_Same(j)
+
+def Infinitives(array, root):
+    pass
+
+def Objects(array, root):
+    pass
+
+def Atributes(array, root):
+    pass
+
+def Conditions(array, root):
+    pass
+
+def Prepositions(array, root):
+    pass
+
+def Conjunctions(array, root):
+    pass
+
+
+
+
+
+
+def Execute(array, roots, indexes):
+    root = Item(None, None)
+    items = []
+    #for i in range(len(array)):
+    #    items.append(Item(array[i], indexes[i]))
+
+    #Subjects(items, root)
+    #Predicates(items, root)
+    Infinitives(items, root)
+    Objects(items, root)
+    Atributes(items, root)
+    Conditions(items, root)
+    Prepositions(items, root)
+    Conjunctions(items, root)
+
+    #roots.append(root)
+    roots.append(indexes)
+
+def Cycle(array, roots, indexes, num):
+    if (num == len(array) - 1):
+        for i in range(len(array[num].POS)):
+            indexes.append(i)
+            Execute(array, roots, indexes.copy())
+            del indexes[-1]
+    else:
+        for i in range(len(array[num].POS)):
+            indexes.append(i)
+            Cycle(array, roots, indexes.copy(), num + 1)
+            del indexes[-1]
+
+def Cycles(array):
+    roots = []
+    Cycle(array, roots, [], 0)
+    return roots
+
 def main():
     array = Get_Words()
+    roots = Cycles(array)
+    
+    #for root in roots:
+    #    for item in root.next:
+    #        print(item.word)
+
+    print(roots)
 
 if (__name__ == "__main__"):
     main()
